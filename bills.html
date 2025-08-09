@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pay Bills - PBank</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Pay Bills</h1>
+  <form id="billsForm">
+    <input type="text" id="biller" placeholder="Biller Name" required><br>
+    <input type="number" id="amount" placeholder="Amount" min="1" required><br>
+    <button type="submit">Pay</button>
+  </form>
+  <p><a href="dashboard.html">Back to Dashboard</a></p>
+
+  <script>
+    const USERS_KEY = "pbank_users";
+    const SESSION_KEY = "pbank_session";
+
+    let users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+    let sessionEmail = localStorage.getItem(SESSION_KEY);
+
+    if (!sessionEmail) {
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("billsForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const biller = document.getElementById("biller").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+
+      let user = users.find(u => u.email === sessionEmail);
+
+      if (user.balance < amount) {
+        return alert("Insufficient funds.");
+      }
+
+      // Deduct immediately
+      user.balance -= amount;
+
+      // Record as "Pending"
+      user.transactions.push({
+        type: "Bill Payment",
+        amount,
+        biller,
+        date: new Date().toLocaleString(),
+        status: "Pending"
+      });
+
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+      alert("Bill payment recorded as Pending.");
+      window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>
