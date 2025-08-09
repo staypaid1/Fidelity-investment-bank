@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - PBank</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Login</h1>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="pin" placeholder="PIN" required><br>
+    <button type="submit">Login</button>
+  </form>
+  <p><a href="register.html">Create an account</a></p>
+
+  <script>
+    const USERS_KEY = "pbank_users";
+    const CURRENT_KEY = "pbank_current";
+
+    document.getElementById("loginForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const pin = document.getElementById("pin").value;
+      let users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+      const user = users.find(u => u.email === email && u.pin === pin);
+      if (!user) {
+        alert("Invalid email or PIN!");
+        return;
+      }
+      localStorage.setItem(CURRENT_KEY, JSON.stringify(user));
+      window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>
