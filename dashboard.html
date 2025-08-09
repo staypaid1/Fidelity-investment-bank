@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PBank - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Dashboard</h1>
+      <div class="nav-row">
+        <a class="btn outline small" href="index.html">Home</a>
+        <a class="btn outline small" id="logoutBtn" href="logout.html">Logout</a>
+      </div>
+    </header>
+
+    <section class="card" id="profileCard">
+      <div id="userInfo"></div>
+      <div class="row top-gap">
+        <a class="btn" href="transfer.html">Transfer</a>
+        <a class="btn outline" href="bills.html">Pay Bills</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Transactions</h3>
+      <ul id="transactions" class="tx-list"></ul>
+    </section>
+
+    <footer class="muted small">Tip: use Transfer and Bills buttons to perform actions on dedicated pages.</footer>
+  </main>
+
+  <script>
+    const USERS_KEY = 'pbank_users';
+    const CURRENT_KEY = 'pbank_current';
+
+    function readUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
+    function writeUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+    function readCurrent(){ return JSON.parse(localStorage.getItem(CURRENT_KEY) || 'null'); }
+    function writeCurrent(u){ localStorage.setItem(CURRENT_KEY, JSON.stringify(u)); }
+
+    // Keep local references
+    let users = readUsers();
+    let current = readCurrent();
+
+    if(!current){
+      window.location.href = 'login.html';
+    }
+
+    function refreshFromStorage(){
+      users = readUsers();
+      // re-load current by matching email so it reflects any updates from other pages
+      const c = users.find(x => x.email === current.email);
+      if(c) current = c;
+      writeCurrent(current);
+    }
+
+    function renderProfile(){
+      document.getElementById('userInfo').innerHTML = `
+        <div><strong>${current.name}</strong></div>
+        <div class="muted">${current.email}</div>
+        <div class="big">Balance: ₱${Number(current.balance).toFixed(2)}</div>
+      `;
+    }
+
+    function renderTransactions(){
+      const el = document.getElementById('transactions');
+      el.innerHTML = '';
+      if(!current.transactions || !current.transactions.length){
+        el.innerHTML = '<li class="muted">No transactions yet.</li>';
+        return;
+      }
+      current.transactions.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'tx';
+        li.innerHTML = `<div class="tx-row"><div><div class="tx-label">${t.label}</div><div class="muted small">${t.date}</div></div><div class="tx-amount ${t.amount < 0 ? 'neg' : 'pos'}">₱${Number(t.amount).toFixed(2)}</div></div>`;
+        el.appendChild(li);
+      });
+    }
+
+    // Initialize
+    refreshFromStorage();
+    renderProfile();
+    renderTransactions();
+
+    // If user returns from action page, update when page becomes visible
+    window.addEventListener('focus', () => {
+      refreshFromStorage();
+      renderProfile();
+      renderTransactions();
+    });
+  </script>
+</body>
+</html>
