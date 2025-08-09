@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PBank - Logout</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <script>
+    localStorage.removeItem('pbank_current');
+    // optional: redirect to login after clearing
+    window.location.href = 'login.html';
+  </script>
+</body>
+</html>
