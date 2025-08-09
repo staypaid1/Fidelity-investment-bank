@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transfer - PBank</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Transfer Funds</h1>
+  <form id="transferForm">
+    <input type="email" id="recipient" placeholder="Recipient Email" required><br>
+    <input type="number" id="amount" placeholder="Amount" min="1" required><br>
+    <button type="submit">Send</button>
+  </form>
+  <p><a href="dashboard.html">Back to Dashboard</a></p>
+
+  <script>
+    const USERS_KEY = "pbank_users";
+    const SESSION_KEY = "pbank_session";
+
+    let users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+    let sessionEmail = localStorage.getItem(SESSION_KEY);
+
+    if (!sessionEmail) {
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("transferForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const recipientEmail = document.getElementById("recipient").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+
+      let sender = users.find(u => u.email === sessionEmail);
+      let recipient = users.find(u => u.email === recipientEmail);
+
+      if (!recipient) {
+        return alert("Recipient not found.");
+      }
+      if (sender.balance < amount) {
+        return alert("Insufficient funds.");
+      }
+
+      // Deduct from sender immediately
+      sender.balance -= amount;
+
+      // Record transactions as "Pending"
+      sender.transactions.push({
+        type: "Transfer",
+        amount,
+        to: recipientEmail,
+        date: new Date().toLocaleString(),
+        status: "Pending"
+      });
+
+      recipient.transactions.push({
+        type: "Incoming Transfer",
+        amount,
+        from: sessionEmail,
+        date: new Date().toLocaleString(),
+        status: "Pending"
+      });
+
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+      alert("Transfer recorded as Pending.");
+      window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>
